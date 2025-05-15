@@ -250,7 +250,7 @@ class MessageService
         }
     }
 
-    public function updateMessage(Message $message,MessageRequest $request)
+    public function updateMessage(Message $message, MessageRequest $request)
     {
         try {
             $inputs = $request->all();
