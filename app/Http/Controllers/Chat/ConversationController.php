@@ -58,10 +58,40 @@ class ConversationController extends Controller
      */
     public function index()
     {
+        // $userId = Auth::id();
+        // $conversations = Conversation::whereHas('users', function ($query) use ($userId) {
+        //     $query->where('user_id', $userId);
+        // })->with('users:id,username')->get()->each(function($conversation){
+        //     $conversation->users->makeHidden(['activation_value','user_type_value','is_discoverable_value','is_blocked_value','pivot']);
+        // });
         $userId = Auth::id();
+
         $conversations = Conversation::whereHas('users', function ($query) use ($userId) {
             $query->where('user_id', $userId);
-        })->get();
+        })
+            ->with([
+                'users' => function ($query) use ($userId) {
+                    $query->whereNot('users.id', $userId) // فیلتر کاربر احراز شده
+                        ->select('users.id', 'users.username', 'users.mobile', 'users.profile_photo_path');
+                }
+            ])
+            ->get()
+            ->each(function ($conversation) {
+                if ($conversation->is_group == 1) {
+                    // اگر گروهی بود، کاربران رو حذف کن
+                    unset($conversation->users);
+                } else {
+                    // خصوصی: فقط کاربر مقابل باقی می‌مونه، فیلدهای اضافی مخفی می‌شن
+                    $conversation->users->makeHidden([
+                        'activation_value',
+                        'user_type_value',
+                        'is_discoverable_value',
+                        'is_blocked_value',
+                        'pivot'
+                    ]);
+                }
+            });
+
 
         return $this->success($conversations);
     }

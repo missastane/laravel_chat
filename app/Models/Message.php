@@ -41,11 +41,13 @@ use Log;
  *       @OA\Property(property="id", type="integer", example=2),
  *       @OA\Property(property="content", type="string", example="سلام"),
  * ),
- * @OA\Property(property="medias", type="object",
+ * @OA\Property(property="medias", type="array",
+ *     @OA\Items(type="object",
  *       @OA\Property(property="id", type="integer", example=2),
  *       @OA\Property(property="file_name", type="string", example="file name"),
  *       @OA\Property(property="file_path", type="string", example="path/file.format"),
  *       @OA\Property(property="mime_type", type="string", example="image/jpeg"),
+ * )
  * ),
  * )
  */
@@ -75,8 +77,8 @@ class Message extends Model
             'read_at' => 'datetime',
         ];
     }
-    protected $hidden = ['conversation_id', 'sender_id', 'message_type', 'parent_id','private_reply_message_id','forwarded_message_id'];
-    protected $appends = ['message_type_value', 'conversation', 'sender', 'medias', 'parent'];
+    protected $hidden = ['currentUserStatus', 'conversation_id', 'sender_id', 'message_type', 'parent_id', 'private_reply_message_id', 'forwarded_message_id'];
+    protected $appends = ['message_type_value', 'conversation', 'sender', 'medias', 'parent','status', 'delivered_at', 'read_at'];
 
     public function getMessageTypeValueAttribute()
     {
@@ -97,7 +99,7 @@ class Message extends Model
     public function getSenderAttribute()
     {
         $sender = $this->sender()->first(['id', 'username', 'profile_photo_path']);
-        $sender->makeHidden(['activation_value', 'user_type_value', 'is_discoverable_value','is_blocked_value']);
+        $sender->makeHidden(['activation_value', 'user_type_value', 'is_discoverable_value', 'is_blocked_value']);
         return $sender;
     }
     public function getParentAttribute()
@@ -136,7 +138,7 @@ class Message extends Model
 
     public function getMediasAttribute()
     {
-        $media = $this->media()->first(['id', 'file_name', 'file_path', 'mime_type']);
+        $media = $this->media()->get(['id', 'file_name', 'file_path', 'mime_type'])->toArray();
         return $media;
     }
     public function media()
@@ -162,5 +164,31 @@ class Message extends Model
     public function favoritedBy()
     {
         return $this->hasMany(FavoriteMessage::class);
+    }
+
+    public function messageStatuses()
+    {
+        return $this->hasMany(MessageUserStatus::class);
+    }
+
+    public function currentUserStatus()
+    {
+        return $this->hasOne(MessageUserStatus::class)
+            ->where('user_id', auth()->id());
+    }
+
+    public function getDeliveredAtAttribute()
+    {
+        return $this->currentUserStatus ? $this->currentUserStatus->delivered_at : null;
+    }
+
+    public function getReadAtAttribute()
+    {
+        return $this->currentUserStatus ? $this->currentUserStatus->read_at : null;
+    }
+
+    public function getStatusAttribute()
+    {
+        return $this->currentUserStatus ? $this->currentUserStatus->status : null;
     }
 }

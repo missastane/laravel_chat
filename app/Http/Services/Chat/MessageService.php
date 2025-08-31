@@ -32,25 +32,46 @@ class MessageService
     {
         $this->messageDeliveryService = $messageDeliveryService;
     }
-    public function getMessages(Conversation $conversation)
-    {
-        try {
-            $user = auth()->user();
-            $messages = Message::where('conversation_id', $conversation->id)
-                ->orderBy('sent_at', 'asc')
-                ->simplePaginate(20);
-            $unDelivered = MessageUserStatus::where('user_id', $user->id)
-                ->whereIn('message_id', $messages->pluck('id'))
-                ->where('status', 0)
-                ->update([
-                    'status' => 1, // delivered
-                    'delivered_at' => now()
-                ]);
-            return $this->success($messages);
-        } catch (Exception $e) {
-            return $this->error($e->getMessage());
-        }
+public function getMessages(Conversation $conversation)
+{
+    try {
+        $user = auth()->user();
+
+        // دریافت تعداد پیام در هر صفحه و شماره صفحه از query string
+        $perPage = request('per_page', 5); // مقدار پیش‌فرض 10
+        $page = request('page', 1);         // مقدار پیش‌فرض 1
+
+        // واکشی پیام‌ها به ترتیب جدیدترین
+        $messages = Message::where('conversation_id', $conversation->id)
+            ->orderBy('created_at', 'desc')
+            ->simplePaginate($perPage, ['*'], 'page', $page);
+
+        // گرفتن اولین پیام خوانده‌نشده در همین صفحه
+        $firstUnreadMessage = MessageUserStatus::where('user_id', $user->id)
+            ->whereIn('message_id', $messages->pluck('id'))
+            ->where('status', 1)
+            ->orderBy('message_id', 'asc')
+            ->first();
+
+        // آپدیت پیام‌هایی که تحویل داده نشده بودن
+        MessageUserStatus::where('user_id', $user->id)
+            ->whereIn('message_id', $messages->pluck('id'))
+            ->where('status', 0)
+            ->update([
+                'status' => 1, // delivered
+                'delivered_at' => now()
+            ]);
+
+        return $this->success([
+            'messages' => $messages,
+            'first_unread_id' => $firstUnreadMessage?->message_id
+        ]);
+
+    } catch (Exception $e) {
+        return $this->error($e->getMessage());
     }
+}
+
     public function downloadMedia(Media $media)
     {
         try {

@@ -254,7 +254,7 @@ class ProfileController extends Controller
         try {
             $inputs = $request->all();
             $user = auth()->user();
-            $otp = OTP::where('token', $token)->where('user_id', $user->id)->where('used', 0)->where('created_at', '>=', Carbon::now()->subMinute(2)->toDateTimeString())->first();
+            $otp = OTP::where('token', $token)->where('user_id', $user->id)->where('used', 0)->where('created_at', '>=', Carbon::now()->subMinutes(2)->toDateTimeString())->first();
             if (empty($otp)) {
                 return response()->json([
                     'status' => false,

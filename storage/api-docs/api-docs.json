@@ -2950,7 +2950,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "شما عضو این مکالمه نیستید"
+                                            "example": "شما مجاز به انجام این عملیات نیستید"
                                         }
                                     },
                                     "type": "object"
@@ -15346,25 +15346,28 @@
                         "type": "object"
                     },
                     "medias": {
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "example": 2
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": 2
+                                },
+                                "file_name": {
+                                    "type": "string",
+                                    "example": "file name"
+                                },
+                                "file_path": {
+                                    "type": "string",
+                                    "example": "path/file.format"
+                                },
+                                "mime_type": {
+                                    "type": "string",
+                                    "example": "image/jpeg"
+                                }
                             },
-                            "file_name": {
-                                "type": "string",
-                                "example": "file name"
-                            },
-                            "file_path": {
-                                "type": "string",
-                                "example": "path/file.format"
-                            },
-                            "mime_type": {
-                                "type": "string",
-                                "example": "image/jpeg"
-                            }
-                        },
-                        "type": "object"
+                            "type": "object"
+                        }
                     }
                 },
                 "type": "object"

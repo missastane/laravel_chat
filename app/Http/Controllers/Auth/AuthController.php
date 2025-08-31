@@ -92,7 +92,7 @@ class AuthController extends Controller
 
             $user->sendEmailVerificationNotification();
 
-            return $this->success(null,'با تشکر از ثبت نام شما. لینک تأیید ایمیل به آدرس ایمیل وارد شده ارسال گردید. لطفا ابتدا ایمیل خود را تأیید فرمایید',201);
+            return $this->success(null, 'با تشکر از ثبت نام شما. لینک تأیید ایمیل به آدرس ایمیل وارد شده ارسال گردید. لطفا ابتدا ایمیل خود را تأیید فرمایید', 201);
         } catch (\Exception $e) {
             return $this->error();
         }
@@ -143,7 +143,7 @@ class AuthController extends Controller
             ->whereNotNull('email_verified_at')
             ->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return $this->error('ایمیل یا رمز عبور اشتباه است یا ایمیل شما تأیید نشده',401);
+            return $this->error('ایمیل یا رمز عبور اشتباه است یا ایمیل شما تأیید نشده', 401);
         }
         $token = JWTAuth::fromUser($user);
         return $this->success([
@@ -183,7 +183,7 @@ class AuthController extends Controller
     public function logout()
     {
         auth()->logout();
-        return $this->success(null,'کاربر با موفقیت از حساب کاربری خود خارج شد');
+        return $this->success(null, 'کاربر با موفقیت از حساب کاربری خود خارج شد');
     }
 
     /**
@@ -224,12 +224,16 @@ class AuthController extends Controller
     {
         try {
             // JWTAuth::invalidate(JWTAuth::getToken());
-            $newToken = auth()->refresh();
-            return $this->success($newToken);
+            $newToken = auth()->refresh(true, true);
+            return $this->success([
+                'access_token' => $newToken,
+                'token_type' => 'bearer',
+                'expires_in' => auth()->factory()->getTTL() * 60
+            ]);
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-            return $this->error('توکن منقضی شده است',401);
+            return $this->error('توکن منقضی شده است', 401);
         } catch (\Tymon\JWTAuth\Exceptions\TokenBlacklistedException $e) {
-            return $this->error('توکن در لیست سیاه قرار گرفته است',401);
+            return $this->error('توکن در لیست سیاه قرار گرفته است', 401);
         } catch (\Exception $e) {
             return $this->error();
         }

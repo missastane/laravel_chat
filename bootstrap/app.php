@@ -9,6 +9,7 @@ use Spatie\Permission\Exceptions\UnauthorizedException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Http\Request;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__ . '/../routes/web.php',
@@ -60,4 +61,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => 'شما مجوز انجام این عملیات را ندارید',
             ], 403);
         });
+        $exceptions->renderable(function (InvalidSignatureException $e, $request) {
+            return redirect(env('SPA_URL') . '/verify-expired');
+        });
+
     })->create();

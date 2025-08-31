@@ -64,7 +64,7 @@ class Conversation extends Model
 
     public function getGroupAttribute()
     {
-        $group = $this->groupConversation()->with('owner:id,username,first_name,last_name')->first(['id', 'name', 'admin_user_id']);
+        $group = $this->groupConversation()->with('owner:id,username,first_name,last_name')->first(['id', 'name', 'admin_user_id','group_profile_avatar']);
         if ($group) {
             $group->makeHidden('is_admin_only_value');
             $group->owner->makeHidden(['activation_value', 'user_type_value', 'is_discoverable_value','is_blocked_value']);

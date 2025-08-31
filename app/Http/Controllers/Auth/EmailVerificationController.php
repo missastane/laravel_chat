@@ -158,13 +158,17 @@ class EmailVerificationController extends Controller
     {
         $user = User::findOrFail($id);
         if (!hash_equals($hash, sha1($user->getEmailForVerification()))) {
-            return $this->error('تأیید ایمیل معتبر نیست',403);
+             return redirect(env('SPA_URL') . '/verify-failed');
         }
         if ($user->hasVerifiedEmail()) {
-            return $this->error('این ایمیل قبلا تأیید شده است',400);
+             return redirect(env('SPA_URL') . '/already-verified');
         }
         $user->markEmailAsVerified();
+         $user->update([
+            'activation' => 1,
+            'activation_date' => now()
+        ]);
         event(new Verified($user));
-        return $this->success(null,'ایمیل شما با موفقیت تأیید شد');
+       return redirect(env('SPA_URL') . '/verify-success');
     }
 }

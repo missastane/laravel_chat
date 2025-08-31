@@ -58,7 +58,7 @@ class PermissionController extends Controller
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(property="status", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="شما عضو این مکالمه نیستید")
+     *             @OA\Property(property="message", type="string", example="شما مجاز به انجام این عملیات نیستید")
      *         ),
      *     ),
      *     @OA\Response(
